@@ -2,34 +2,32 @@
 #include <vector>
 #include <cstddef>
 
-using namespace sf;
-
 template< typename P, typename T>
-void drawTriangle(P& canvas,T first_vertex, T second_vertex, T third_vertex)
+void draw_triangle(P& canvas,T first_vertex, T second_vertex, T third_vertex)
 {
-	Vertex fs[] = { first_vertex,second_vertex };//line between first and second vertex
-	Vertex ft[] = { first_vertex, third_vertex };//...first third
-	Vertex st[] = { second_vertex,third_vertex };//...second third
+	sf::Vertex fs[] = { first_vertex,second_vertex };//line between first and second vertex
+	sf::Vertex ft[] = { first_vertex, third_vertex };//...first third
+	sf::Vertex st[] = { second_vertex,third_vertex };//...second third
 	
 	canvas.draw(fs, 2, sf::Lines);
 	canvas.draw(ft, 2, sf::Lines);
 	canvas.draw(st, 2, sf::Lines);
 }
 
-template <typename T, typename Container, typename W>
-void generateTriangle(T & triangle,Container & trojkaty, W & canvas)
+template <typename T, typename Container>
+void generate_triangle(T & triangle, Container & c_triangles)
 {
-	Vertex pierwszy = Vector2f((triangle[0].position.x + triangle[2].position.x) / 2, (triangle[0].position.y + triangle[2].position.y) / 2);
-	Vertex drugi = Vector2f((triangle[0].position.x + triangle[1].position.x) / 2 ,(triangle[0].position.y + triangle[1].position.y) / 2) ;
-	Vertex trzeci =Vector2f ((triangle[1].position.x + triangle[2].position.x) / 2 ,(triangle[1].position.y + triangle[2].position.y) / 2) ;
+	sf::Vertex f_vertex = sf::Vector2f((triangle[0].position.x + triangle[2].position.x) / 2, (triangle[0].position.y + triangle[2].position.y) / 2);
+	sf::Vertex s_vertex = sf::Vector2f((triangle[0].position.x + triangle[1].position.x) / 2 ,(triangle[0].position.y + triangle[1].position.y) / 2) ;
+	sf::Vertex t_vertex =sf::Vector2f ((triangle[1].position.x + triangle[2].position.x) / 2 ,(triangle[1].position.y + triangle[2].position.y) / 2) ;
 
-	std::vector<Vertex> trojk = { pierwszy,drugi,triangle[0] };
-	std::vector<Vertex> trojk1 = { pierwszy,trzeci,triangle[2] };
-	std::vector<Vertex> trojk2 = { drugi,trzeci,triangle[1] };
+	std::vector<sf::Vertex> f_triangle = { f_vertex,s_vertex,triangle[0] };
+	std::vector<sf::Vertex> s_triangle = { f_vertex,t_vertex,triangle[2] };
+	std::vector<sf::Vertex> t_triangle = { s_vertex,t_vertex,triangle[1] };
 	
-	trojkaty.push_back(trojk);
-	trojkaty.push_back(trojk1);
-	trojkaty.push_back(trojk2);
+	c_triangles.push_back(f_triangle);
+	c_triangles.push_back(s_triangle);
+	c_triangles.push_back(t_triangle);
 }
 
 std::size_t power_three(std::size_t n)
@@ -52,19 +50,20 @@ std::size_t sum_of_pow_three(std::size_t n)
 }
 int main()
 {
-	const int window_width = 1240;
-	const int window_height = 800;
+	const std::size_t window_width = 900;
+	const std::size_t window_height = 900;
+	std::size_t fractal_deepth = 9;
+
 	sf::RenderWindow window(sf::VideoMode(window_width, window_height), "Sierpinski triangle!");
 
-	std::vector<Vertex> first_triangle = {  Vector2f(window_width , window_height),Vector2f(window_width / 2, 0.f), Vector2f(0.f, window_height) };
+	std::vector<sf::Vertex> first_triangle = {  sf::Vector2f(window_width , window_height),sf::Vector2f(window_width / 2, 0.f), sf::Vector2f(0.f, window_height) };
 
-	std::vector<std::vector<Vertex>> triangles;
+	std::vector<std::vector<sf::Vertex>> triangles;
 	triangles.push_back(first_triangle);
 
-	std::size_t deepth = sum_of_pow_three(8);
-	for (std::size_t i = 0; i < deepth; i++)
+	for (std::size_t i = 0; i < sum_of_pow_three(fractal_deepth); i++)
 	{
-		generateTriangle(triangles[i], triangles, window);
+		generate_triangle(triangles[i], triangles);
 	}
 
 	while (window.isOpen())
@@ -78,9 +77,10 @@ int main()
 
 		for (std::size_t j = 0; j < triangles.size(); j++)
 		{
-			drawTriangle(window, triangles[j][0], triangles[j][1], triangles[j][2]);
+			draw_triangle(window, triangles[j][0], triangles[j][1], triangles[j][2]);
 		}
 		window.display();
 	}
+
 	return 0;
 }
